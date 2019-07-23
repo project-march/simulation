@@ -11,7 +11,7 @@
   <param name="robot_description"
          command="$(find xacro)/xacro --inorder '$(find march_description)/urdf/test-joint-rot.xacro'" />
 
-  <rosparam file="config_test_joint_rot.yaml" command="load"/>
+  <rosparam file="$(find march_simulation)/config/config_test_joint_rot.yaml" command="load"/>
 
   <node name="controller_spawner" pkg="controller_manager" type="spawner" ns="/march" output="screen"
         args="trajectory_controller joint_state_controller"/>

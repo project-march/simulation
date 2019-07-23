@@ -9,7 +9,7 @@
 
   <!-- Load the URDF into the ROS Parameter Server -->
   <param name="robot_description"
-         command="$(find xacro)/xacro --inorder '$(find march_description)/urdf/test-joint.xacro'" />
+         command="$(find xacro)/xacro --inorder '$(find march_description)/urdf/test-joint-rot.xacro'" />
 
 <!--  <rosparam file="$(find march_simulation)/config/config_test_joint.yaml" command="load"/>-->
 

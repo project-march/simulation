@@ -21,5 +21,8 @@
       </camera>
     </gui>
 
+    <!-- Plugins -->
+    <plugin name="hello_world" filename="libhello_world.so"/>
+
   </world>
 </sdf>

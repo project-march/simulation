@@ -22,7 +22,7 @@
     </gui>
 
     <!-- Plugins -->
-    <plugin name="hello_world" filename="libhello_world.so"/>
+    <plugin name="gazebo_tutorials" filename="libgazebo_tutorials.so"/>
 
   </world>
 </sdf>

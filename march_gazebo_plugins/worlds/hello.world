@@ -10,6 +10,6 @@
     </include>
 
     <!-- reference to your plugin -->
-    <plugin name="gazebo_tutorials" filename="libgazebo_tutorials.so"/>
+    <plugin name="<march_gazebo_plugins>" filename="libmarch_gazebo_plugins.so"/>
   </world>
 </sdf>

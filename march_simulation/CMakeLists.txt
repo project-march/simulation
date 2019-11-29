@@ -9,7 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
     joint_state_controller
     joint_trajectory_controller
     march_description
-    gazebo_tutorials
+    march_gazebo_plugins
     robot_state_publisher
     xacro
 )

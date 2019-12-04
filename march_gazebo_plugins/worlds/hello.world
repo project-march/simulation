@@ -29,7 +29,7 @@
         </visual>
       </link>
 
-      <plugin name="model_push" filename="libmodel_push.so"/>
+      <plugin name="com_controller" filename="libcom_controller.so"/>
     </model>
 
     <!-- reference to your plugin -->

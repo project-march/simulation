@@ -29,4 +29,7 @@ while not rospy.is_shutdown():
         tf_broadcaster.sendTransform(transform)
     except rospy.ServiceException as e:
         rospy.loginfo("Get Model State service call failed:  {0}".format(e))
-    rate.sleep()
+    try:
+        rate.sleep()
+    except rospy.ROSInterruptException:
+        pass

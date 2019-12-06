@@ -2,10 +2,12 @@
 import rospy
 import tf2_ros
 from geometry_msgs.msg import TransformStamped
-from gazebo_msgs.srv import GetModelState, GetModelStateRequest
+from gazebo_msgs.srv import GetModelState, GetModelStateRequest, GetWorldProperties, GetWorldPropertiesRequest
 
 rospy.init_node('to_world_transform', anonymous=True)
 rospy.loginfo("Exoskeleton is mobile")
+
+model_name = 'march'
 
 transform = TransformStamped()
 transform.header.frame_id = 'world'
@@ -13,11 +15,20 @@ transform.child_frame_id = 'base_link'
 tf_broadcaster = tf2_ros.TransformBroadcaster()
 
 rospy.wait_for_service('/gazebo/get_model_state')
+rospy.wait_for_service('/gazebo/get_world_properties')
 get_model_srv = rospy.ServiceProxy('/gazebo/get_model_state', GetModelState)
+get_world_properties = rospy.ServiceProxy('/gazebo/get_world_properties', GetWorldProperties)
+world_properties_request = GetWorldPropertiesRequest()
 model = GetModelStateRequest()
-model.model_name = 'march'
+model.model_name = model_name
 
 rate = rospy.Rate(10)
+
+while model_name not in get_world_properties(world_properties_request).model_names:
+    try:
+        rate.sleep()
+    except rospy.ROSInterruptException:
+        pass
 
 while not rospy.is_shutdown():
     try:

@@ -3,8 +3,9 @@ project(march_gazebo_plugins)
 
 # Load catkin and all dependencies required for this package
 find_package(catkin REQUIRED COMPONENTS
-        roscpp
         gazebo_ros
+        march_shared_resources
+        roscpp
         )
 
 # Depend on system install of Gazebo

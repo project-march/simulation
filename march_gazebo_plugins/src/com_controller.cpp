@@ -5,7 +5,9 @@
 #include <ignition/math/Vector3.hh>
 #include <iostream>
 #include <cmath>
-#include <ros/ros.h>
+#include "march_shared_resources/Subgait.h"
+#include <gazebo/transport/transport.hh>
+#include <gazebo/msgs/msgs.hh>
 
 namespace gazebo
 {
@@ -44,13 +46,20 @@ namespace gazebo
             this->updateConnection = event::Events::ConnectWorldUpdateBegin(
                     std::bind(&ComController::OnUpdate, this));
 
+            // Create the node
+            this->node = transport::NodePtr(new transport::Node());
+            this->node->Init(this->model->GetWorld()->Name());
 
+            // Subscribe to the topic, and register a callback
+            this->sub = this->node->Subscribe("/march/gait/schedule/goal", &ComController::OnPublish, this);
         }
 
         // Called by the world update start event
-        void OnPublish()
+        void OnPublish(Subgait &_msg)
         {
-
+            cout << _msg.goal.current_subgait.name << '\n';
+            this->time_since_start = this->model->GetWorld()->SimTime().Double();
+            this->subgait_name = _msg.goal.current_subgait.name;
         }
 
         // Called by the world update start event
@@ -81,21 +90,21 @@ namespace gazebo
                 }
                 else if (subgait_name == "right_open") {
                     goal_position_x = foot_left_pose.X() + 0.5 * (foot_right_pose.X() - foot_left_pose.X()) *
-                                      (1 - std::cos(3.14*(time - time_since_start)/subgait_duration));
-                    goal_position_x = foot_left_pose.Y() + 0.5 * (time - time_since_start) *
-                                      open_step_size / open_duration
+                                      (1 - std::cos(3.14*(time - time_since_start)/open_duration));
+                    goal_position_y = foot_left_pose.Y() + 0.5 * (time - time_since_start) *
+                                      open_step_size / open_duration;
                 }
                 else if (subgait_name == "right_swing") {
                     goal_position_x = foot_left_pose.X() + 0.5 * (foot_right_pose.X() - foot_left_pose.X()) *
-                                      (1 - std::cos(3.14*(time - time_since_start)/subgait_duration));
-                    goal_position_x = foot_left_pose.Y() - 0.25 * swing_step_size +
-                                      0.5 * (time - time_since_start) * open_step_size / open_duration
+                                      (1 - std::cos(3.14*(time - time_since_start)/swing_duration));
+                    goal_position_y = foot_left_pose.Y() - 0.25 * swing_step_size +
+                                      0.5 * (time - time_since_start) * swing_step_size / swing_duration;
                 }
                 else if (subgait_name == "left_swing") {
                     goal_position_x = foot_right_pose.X() + 0.5 * (foot_left_pose.X() - foot_right_pose.X()) *
-                                      (1 - std::cos(3.14*(time - time_since_start)/subgait_duration));
-                    goal_position_x = foot_right_pose.Y() - 0.25 * swing_step_size +
-                                      0.5 * (time - time_since_start) * open_step_size / open_duration
+                                      (1 - std::cos(3.14*(time - time_since_start)/swing_duration));
+                    goal_position_y = foot_right_pose.Y() - 0.25 * swing_step_size +
+                                      0.5 * (time - time_since_start) * swing_step_size / swing_duration;
                 }
                 else {
                     std::cout << subgait_name << '\n';
@@ -131,6 +140,10 @@ namespace gazebo
         double error_x_last_timestep;
         double error_y_last_timestep;
         std::string subgait_name;
+
+        /// \brief A node and subscriber to listen to subgait publisher
+        private: transport::NodePtr node;
+        private: transport::SubscriberPtr sub;
 
             // Pointer to the update event connection
         event::ConnectionPtr updateConnection;

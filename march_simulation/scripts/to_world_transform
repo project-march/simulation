@@ -24,7 +24,7 @@ model.model_name = model_name
 
 rate = rospy.Rate(10)
 
-while model_name not in get_world_properties(world_properties_request).model_names:
+while not rospy.is_shutdown() and model_name not in get_world_properties(world_properties_request).model_names:
     try:
         rate.sleep()
     except rospy.ROSInterruptException:

@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 2.8.3)
+# 2.8.8 required to use PROTOBUF_IMPORT_DIRS
+cmake_minimum_required(VERSION 2.8.8 FATAL_ERROR)
 project(march_gazebo_plugins)
 
 # Load catkin and all dependencies required for this package
@@ -17,14 +18,22 @@ catkin_package(
         gazebo_ros
 )
 
-link_directories(${GAZEBO_LIBRARY_DIRS})
-include_directories(${Boost_INCLUDE_DIR} ${catkin_INCLUDE_DIRS} ${GAZEBO_INCLUDE_DIRS})
+include_directories(
+    ${Boost_INCLUDE_DIR}
+    ${catkin_INCLUDE_DIRS}
+    ${GAZEBO_INCLUDE_DIRS}
+    ${CMAKE_CURRENT_BINARY_DIR}/msgs
+)
+link_directories(${GAZEBO_LIBRARY_DIRS} ${CMAKE_CURRENT_BINARY_DIR}/msgs)
+add_subdirectory(msgs)
 
 add_library(${PROJECT_NAME} src/simple_world_plugin.cpp)
-target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} march_gazebo_messages ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
+add_dependencies(${PROJECT_NAME}  march_gazebo_messages)
 
 add_library(com_controller src/com_controller.cpp)
-target_link_libraries(com_controller ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
+target_link_libraries(com_controller march_gazebo_messages ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
+add_dependencies(com_controller march_gazebo_messages)
 
 install(DIRECTORY launch worlds
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}

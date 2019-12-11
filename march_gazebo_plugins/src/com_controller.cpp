@@ -1,16 +1,22 @@
 #include <functional>
+#include <boost/shared_ptr.hpp>
 #include <gazebo/gazebo.hh>
 #include <gazebo/physics/physics.hh>
 #include <gazebo/common/common.hh>
 #include <ignition/math/Vector3.hh>
 #include <iostream>
 #include <cmath>
-#include "march_shared_resources/Subgait.h"
+#include <march_shared_resources/Subgait.h>
 #include <gazebo/transport/transport.hh>
 #include <gazebo/msgs/msgs.hh>
+#include <Setpoint.pb.h>
 
 namespace gazebo
 {
+    typedef const boost::shared_ptr<
+            const march_gazebo_messages::msgs::Setpoint>
+            SetpointPtr;
+    
     class ComController : public ModelPlugin
     {
         public:
@@ -45,21 +51,21 @@ namespace gazebo
             // simulation iteration.
             this->updateConnection = event::Events::ConnectWorldUpdateBegin(
                     std::bind(&ComController::OnUpdate, this));
-
             // Create the node
             this->node = transport::NodePtr(new transport::Node());
-            this->node->Init(this->model->GetWorld()->Name());
+            this->node->Init();
 
             // Subscribe to the topic, and register a callback
             this->sub = this->node->Subscribe("/march/gait/schedule/goal", &ComController::OnPublish, this);
         }
 
         // Called by the world update start event
-        void OnPublish(Subgait &_msg)
+        void OnPublish(SetpointPtr &_msg)
         {
-            cout << _msg.goal.current_subgait.name << '\n';
+            std::cout << _msg->joint_names() << '\n';/*
+            std::cout << _msg.goal.current_subgait.name << '\n';
             this->time_since_start = this->model->GetWorld()->SimTime().Double();
-            this->subgait_name = _msg.goal.current_subgait.name;
+            this->subgait_name = _msg.goal.current_subgait.name;*/
         }
 
         // Called by the world update start event
@@ -140,10 +146,8 @@ namespace gazebo
         double error_x_last_timestep;
         double error_y_last_timestep;
         std::string subgait_name;
-
-        /// \brief A node and subscriber to listen to subgait publisher
-        private: transport::NodePtr node;
-        private: transport::SubscriberPtr sub;
+        transport::NodePtr node;
+        transport::SubscriberPtr sub;
 
             // Pointer to the update event connection
         event::ConnectionPtr updateConnection;

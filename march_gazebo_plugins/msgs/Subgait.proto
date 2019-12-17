@@ -1,12 +1,27 @@
-# used in Gait.action
-string name
-string version
-string description
-string gait_type
+package march_gazebo_messages.msgs;
+import "Duration.proto";
+import "Setpoint.proto";
+import "Sound.proto";
+import "pose_trajectory.proto";
 
-# Filter the interpolated setpoints from the trajectory with the list of user-defined setpoints.
-Setpoint[] setpoints
+message GaitGoal
+{
+    message Goal
+    {
+        message Subgait
+        {
+            required string name = 1;
+            required string version = 2;
+            required string description = 3;
+            required string gait_type = 4;
 
-trajectory_msgs/JointTrajectory trajectory
-duration duration
-Sound[] sounds
+            repeated march_gazebo_messages.msgs.Setpoint setpoints = 5;
+
+            required gazebo.msgs.PoseTrajectory trajectory = 6;
+            required march_gazebo_messages.msgs.duration duration = 7;
+            repeated march_gazebo_messages.msgs.Sound sounds = 8;
+        }
+        required Subgait current_subgait = 1;
+    }
+    required Goal goal = 1;
+}

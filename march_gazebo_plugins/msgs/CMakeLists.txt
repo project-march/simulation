@@ -8,7 +8,16 @@ foreach(ITR ${GAZEBO_INCLUDE_DIRS})
 endforeach()
 
 set (msgs
+    Subgait.proto
     Setpoint.proto
+    Duration.proto
+    Sound.proto
+    ${PROTOBUF_IMPORT_DIRS}/time.proto
+    ${PROTOBUF_IMPORT_DIRS}/pose_trajectory.proto
+    ${PROTOBUF_IMPORT_DIRS}/pose_stamped.proto
+    ${PROTOBUF_IMPORT_DIRS}/pose.proto
+    ${PROTOBUF_IMPORT_DIRS}/vector3d.proto
+    ${PROTOBUF_IMPORT_DIRS}/quaternion.proto
 )
 PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS ${msgs})
 add_library(march_gazebo_messages SHARED ${PROTO_SRCS})

@@ -1,0 +1,8 @@
+package march_gazebo_messages.msgs;
+import "time.proto";
+
+message Sound
+{
+    required gazebo.msgs.Time time = 1;
+    required string file_name = 2;
+}

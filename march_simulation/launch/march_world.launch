@@ -38,6 +38,7 @@
             <arg name="gui" value="$(arg gazebo_ui)" />
             <arg name="paused" value="true"/>
             <arg name="use_sim_time" value="$(arg use_sim_time)"/>
+            <arg name="verbose" value="true" />
         </include>
 
         <!-- Run a python script to the send a service call to gazebo_ros to spawn a URDF robot -->

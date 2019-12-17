@@ -1,6 +1,8 @@
 package march_gazebo_messages.msgs;
+import "Duration.proto";
 
 message Setpoint
 {
-    required string joint_names = 1;
+    required march_gazebo_messages.msgs.duration time_from_start = 1;
+    repeated string joint_names = 2;
 }

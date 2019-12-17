@@ -9,19 +9,27 @@
 #include <march_shared_resources/Subgait.h>
 #include <gazebo/transport/transport.hh>
 #include <gazebo/msgs/msgs.hh>
-#include <Setpoint.pb.h>
+#include <Subgait.pb.h>
+#include <ros/ros.h>
 
 namespace gazebo
 {
     typedef const boost::shared_ptr<
-            const march_gazebo_messages::msgs::Setpoint>
-            SetpointPtr;
+            const march_gazebo_messages::msgs::GaitGoal>
+            GaitGoalPtr;
     
     class ComController : public ModelPlugin
     {
         public:
         void Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/)
         {
+            // Make sure the ROS node for Gazebo has already been initialized
+            if (!ros::isInitialized()) {
+                ROS_FATAL_STREAM("A ROS node for Gazebo has not been initialized, unable to load plugin. "
+                                         << "Load the Gazebo system plugin 'libgazebo_ros_api_plugin.so' in the gazebo_ros package)");
+                return;
+            }
+
             // Store the pointer to the model
             this->model = _parent;
             this->leg_leg_distance = 0.5;
@@ -51,20 +59,25 @@ namespace gazebo
             // simulation iteration.
             this->updateConnection = event::Events::ConnectWorldUpdateBegin(
                     std::bind(&ComController::OnUpdate, this));
+
             // Create the node
             this->node = transport::NodePtr(new transport::Node());
             this->node->Init();
 
             // Subscribe to the topic, and register a callback
             this->sub = this->node->Subscribe("/march/gait/schedule/goal", &ComController::OnPublish, this);
+            std::cout << "Nothing special here" << '\n';
+            std::cout << this->sub << '\n';
         }
 
         // Called by the world update start event
-        void OnPublish(SetpointPtr &_msg)
+        void OnPublish(GaitGoalPtr &_msg)
         {
-            std::cout << _msg->joint_names() << '\n';/*
-            std::cout << _msg.goal.current_subgait.name << '\n';
-            this->time_since_start = this->model->GetWorld()->SimTime().Double();
+            std::cout << "Its a message!" << '\n';
+            std::cout << "Its amazing!!" << '\n';
+            std::cout << _msg->goal().current_subgait().name() << '\n';
+            /*std::cout << _msg.goal.current_subgait.name << '\n';
+            this->time _since_start = this->model->GetWorld()->SimTime().Double();
             this->subgait_name = _msg.goal.current_subgait.name;*/
         }
 
@@ -80,6 +93,8 @@ namespace gazebo
             // Called by the world update start event
         void OnUpdate()
             {
+                std::cout << "print" << '\n';
+                std::cout << this->sub << '\n';
                 double time = this->model->GetWorld()->SimTime().Double();
                 double goal_position_x;
                 double goal_position_y;
@@ -88,7 +103,7 @@ namespace gazebo
                 auto foot_left_pose = this->foot_left->WorldCoGPose().Pos();
                 auto foot_right_pose = this->foot_right->WorldCoGPose().Pos();
 
-                std::cout << model_com.Z() << '\n';
+//                std::cout << model_com.Z() << '\n';
 
                 if (subgait_name == "standing"){
                     goal_position_x = foot_left_pose.X();
@@ -123,9 +138,9 @@ namespace gazebo
 
                 double F_x = -this->p_x * error_x - this->d_x * (error_x - this->error_x_last_timestep);
                 double F_y = -this->p_y * error_y - this->d_y * (error_y - this->error_y_last_timestep);
-                std::cout << F_x << "  " << F_y << "\n";
+//                std::cout << F_x << "  " << F_y << "\n";
                 const ignition::math::v4::Vector3<double> vec(F_x, F_y, 0.0);
-                this->model->GetLink("base_link")->AddForce(vec);
+//                this->model->GetLink("base_link")->AddForce(vec);
             }
 
             // Pointer to the model

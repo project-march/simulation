@@ -7,6 +7,7 @@ find_package(catkin REQUIRED COMPONENTS
         gazebo_ros
         march_shared_resources
         roscpp
+        std_msgs
         )
 
 # Depend on system install of Gazebo
@@ -19,6 +20,8 @@ catkin_package(
 )
 
 include_directories(
+    ${roscpp_INCLUDE_DIRS}
+    ${std_msgs_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIR}
     ${catkin_INCLUDE_DIRS}
     ${GAZEBO_INCLUDE_DIRS}

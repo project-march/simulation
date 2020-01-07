@@ -45,3 +45,8 @@ install(TARGETS ${PROJECT_NAME} com_controller
         )
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GAZEBO_CXX_FLAGS}")
+
+add_executable(pub src/pub.cpp)
+
+target_link_libraries(pub ${GAZEBO_LIBRARIES})
+

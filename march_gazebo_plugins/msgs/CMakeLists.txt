@@ -22,3 +22,8 @@ set (msgs
 PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS ${msgs})
 add_library(march_gazebo_messages SHARED ${PROTO_SRCS})
 target_link_libraries(march_gazebo_messages ${PROTOBUF_LIBRARY})
+
+install(TARGETS march_gazebo_messages
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        )

@@ -14,12 +14,10 @@ include_directories(
     ${GAZEBO_INCLUDE_DIRS}
 )
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GAZEBO_CXX_FLAGS}")
+add_library(${PROJECT_NAME} src/com_controller.cpp)
+target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${GAZEBO_LIBRmaARIES})
 
-add_library(com_controller src/com_controller.cpp)
-target_link_libraries(com_controller ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
-
-install(TARGETS com_controller
+install(TARGETS ${PROJECT_NAME}
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         )

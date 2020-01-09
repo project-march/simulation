@@ -11,10 +11,7 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <depend>gazebo</depend>
-  <depend>gazebo_plugins</depend>
-  <depend>gazebo_ros</depend>
   <depend>march_shared_resources</depend>
-  <depend>roscpp</depend>
 
   <export>
     <gazebo_ros plugin_path="${prefix}/lib" gazebo_media_path="${prefix}" />

@@ -37,10 +37,12 @@ namespace gazebo
             this->open_step_size = 0.4;
 
             this->subgait_name = "home_stand";
-            this->p_x = 200;
-            this->d_x = 0;
-            this->p_y = 200;
-            this->d_y = 0;
+            this->p_pitch = 100;
+            this->d_pitch = 0;
+            this->p_roll = 150;
+            this->d_roll = 0;
+            this->p_yaw = 500;
+            this->d_yaw = 0;
             this->subgait_start_time = 0;
             this->error_x_last_timestep = 0;
             this->error_y_last_timestep = 0;
@@ -52,6 +54,7 @@ namespace gazebo
 
             this->foot_left = this->model->GetLink("ankle_plate_left");
             this->foot_right = this->model->GetLink("ankle_plate_right");
+            this->base_link = this->model->GetLink("base_link");
 
             // Listen to the update event. This event is broadcast every
             // simulation iteration.
@@ -124,60 +127,50 @@ namespace gazebo
             auto foot_left_pose = this->foot_left->WorldCoGPose().Pos();
             auto foot_right_pose = this->foot_right->WorldCoGPose().Pos();
 
-            double goal_position_y = 0.5 * (foot_left_pose.Y() + foot_right_pose.Y());
-            double goal_position_x = 0.5 * (foot_left_pose.X() + foot_right_pose.X()) - 0.1;
-            double error_x = model_com.X() - goal_position_x;
-            double error_y = model_com.Y() - goal_position_y;
-
-            double F_x = -this->p_x * error_x - this->d_x * (error_x - this->error_x_last_timestep);
-            double F_y = -this->p_y * error_y - this->d_y * (error_y - this->error_y_last_timestep);
-            const ignition::math::v4::Vector3<double> vec(F_x, F_y, 0.0);
-
-            std::cout << F_x << "    " << F_y << "\n";
-
-
-            double F_z = 9.81 * 0.5 * 0.95 * this->GetMass();
-            if (time - subgait_start_time > 0.8 * subgait_duration){
-                F_z = F_z * (5 - 5 * (time - subgait_start_time)/subgait_duration);
-            }
-            const ignition::math::v4::Vector3<double> Fvecz(0.0, 0.0, F_z);
+            double goal_position_x = 0.5 * (foot_left_pose.X() + foot_right_pose.X());
+            double goal_position_y;
 
             if (subgait_name == "home_stand"){
-//                goal_position_x = foot_left_pose.X();
-//                goal_position_y = foot_left_pose.Y();
-//                this->model->GetLink("hip_aa_frame_right_side")->AddForce(Fvecz);
-//                this->model->GetLink("hip_aa_frame_right_side")->AddForce(Fvecz);
-//                this->model->GetLink("upper_leg_left")->AddForce(vec);
+                goal_position_y = 0.5 * (2 * foot_left_pose.Y() + 0 * foot_right_pose.Y());
             }
             else if (subgait_name == "right_open") {
-//                goal_position_x = foot_left_pose.X() - 0.5 * (time - subgait_start_time) *
-//                                                       open_step_size / subgait_duration;
-//                goal_position_y = foot_left_pose.Y() + 0.5 * (foot_right_pose.Y() - foot_left_pose.Y()) *
-//                                                       (1 - std::cos(3.14*(time - subgait_start_time)/subgait_duration));
-                this->model->GetLink("hip_aa_frame_right_side")->AddForce(Fvecz);
-                this->model->GetLink("upper_leg_left")->AddForce(vec);
+                goal_position_y = 0.5 * (2 * foot_left_pose.Y() + 0 * foot_right_pose.Y());
             }
             else if (subgait_name == "right_swing") {
-//                goal_position_x = foot_left_pose.X() + 0.25 * swing_step_size -
-//                                                       0.5 * (time - subgait_start_time) * swing_step_size / subgait_duration;
-//                goal_position_y = foot_left_pose.Y() + 0.5 * (foot_right_pose.Y() - foot_left_pose.Y()) *
-//                                                       (1 - std::cos(3.14*(time - subgait_start_time)/subgait_duration));
-                this->model->GetLink("hip_aa_frame_right_side")->AddForce(Fvecz);
-                this->model->GetLink("upper_leg_left")->AddForce(vec);
+                goal_position_y = 0.5 * (2 * foot_left_pose.Y() + 0 * foot_right_pose.Y());
             }
             else if (subgait_name == "left_swing") {
-//                goal_position_x = foot_right_pose.X() + 0.25 * swing_step_size -
-//                                                        0.5 * (time - subgait_start_time) * swing_step_size / subgait_duration;
-//                goal_position_y = foot_right_pose.Y() + 0.5 * (foot_left_pose.Y() - foot_right_pose.Y()) *
-//                                                        (1 - std::cos(3.14*(time - subgait_start_time)/subgait_duration));
-                this->model->GetLink("hip_aa_frame_left_side")->AddForce(Fvecz);
-                this->model->GetLink("upper_leg_right")->AddForce(vec);
+                goal_position_y = 0.5 * (0 * foot_left_pose.Y() + 2 * foot_right_pose.Y());
             }
             else {
                 std::cout << subgait_name << '\n';
             }
 
+            double goal_roll = 0.5 * (foot_left_pose.Y() + foot_right_pose.Y());
+            double error_x = model_com.X() - goal_position_x;
+            double error_y = model_com.Y() - goal_position_y;
+            double error_yaw = foot_left->WorldPose().Rot().Z();
 
+            double T_pitch = -this->p_pitch * error_x - this->d_pitch * (error_x - this->error_x_last_timestep);
+            double T_roll = this->p_roll * error_y + this->d_roll * (error_y - this->error_y_last_timestep);
+            double T_yaw = -this->p_yaw * error_yaw - this->d_yaw * (error_yaw - this->error_yaw_last_timestep);
+
+            const ignition::math::v4::Vector3<double> torque_all(0, T_pitch, T_yaw); // -roll, pitch, -yaw
+            const ignition::math::v4::Vector3<double> torque_stable(T_roll, 0, 0); // -roll, pitch, -yaw
+
+
+            for (auto const& link : this->model->GetLinks()) {
+                link->AddTorque(torque_all);
+                if (subgait_name == "left_swing") {
+                    if (link->GetName().find("right") != std::string::npos) {
+                        link->AddTorque(torque_stable);
+                    }
+                } else{
+                    if (link->GetName().find("left") != std::string::npos) {
+                        link->AddTorque(torque_stable);
+                    }
+                }
+            }
 
         }
 
@@ -185,17 +178,21 @@ namespace gazebo
         physics::ModelPtr model;
         physics::LinkPtr foot_left;
         physics::LinkPtr foot_right;
+        physics::LinkPtr base_link;
         double subgait_start_time;
         double swing_step_size;
         double subgait_duration;
         double open_step_size;
         double leg_leg_distance;
-        double p_x;
-        double d_x;
-        double p_y;
-        double d_y;
+        double p_yaw;
+        double d_yaw;
+        double p_pitch;
+        double d_pitch;
+        double p_roll;
+        double d_roll;
         double error_x_last_timestep;
         double error_y_last_timestep;
+        double error_yaw_last_timestep;
         std::string subgait_name;
 
         // Pointer to the update event connection

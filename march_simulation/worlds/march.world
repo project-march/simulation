@@ -21,8 +21,5 @@
       </camera>
     </gui>
 
-    <!-- Plugins -->
-    <plugin name="march_gazebo_plugins" filename="libmarch_gazebo_plugins.so"/>
-
   </world>
 </sdf>

@@ -1,7 +1,0 @@
-package march_gazebo_messages.msgs;
-
-message duration
-{
-    required double secs = 1;
-    required double nsecs = 2;
-}

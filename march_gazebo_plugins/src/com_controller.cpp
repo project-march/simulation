@@ -23,7 +23,7 @@ public:
     // Store the pointer to the model
     this->model = _parent;
     this->leg_leg_distance = 0.5;
-    this->swing_step_size = 0.8;
+    this->swing_step_size = 0.7;
     this->subgait_duration = 1.5;
     this->open_step_size = 0.4;
 

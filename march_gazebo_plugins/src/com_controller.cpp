@@ -28,15 +28,16 @@ public:
     this->open_step_size = 0.4;
 
     this->subgait_name = "home_stand";
-    this->p_pitch = 100;
-    this->d_pitch = 0;
+    this->p_pitch = 60;
+    this->d_pitch = 10;
     this->p_roll = 150;
-    this->d_roll = 0;
+    this->d_roll = 7.5;
     this->p_yaw = 500;
-    this->d_yaw = 0;
+    this->d_yaw = 25;
     this->subgait_start_time = 0;
     this->error_x_last_timestep = 0;
     this->error_y_last_timestep = 0;
+    this->error_yaw_last_timestep = 0;
 
     // Apply a small linear velocity to the model.
     for (auto const &i : this->model->GetLinks()) {
@@ -120,24 +121,51 @@ public:
     auto foot_left_pose = this->foot_left->WorldCoGPose().Pos();
     auto foot_right_pose = this->foot_right->WorldCoGPose().Pos();
 
-    double goal_position_x = 0.5 * (foot_left_pose.X() + foot_right_pose.X());
+    double goal_position_x = 0.5 * (foot_left_pose.X() + foot_right_pose.X()) - 0.05;
     double goal_position_y;
 
-    if (subgait_name == "home_stand") {
-      goal_position_y =
-          0.5 * (2 * foot_left_pose.Y() + 0 * foot_right_pose.Y());
-    } else if (subgait_name == "right_open") {
-      goal_position_y =
-          0.5 * (2 * foot_left_pose.Y() + 0 * foot_right_pose.Y());
-    } else if (subgait_name == "right_swing") {
-      goal_position_y =
-          0.5 * (2 * foot_left_pose.Y() + 0 * foot_right_pose.Y());
-    } else if (subgait_name == "left_swing") {
-      goal_position_y =
-          0.5 * (0 * foot_left_pose.Y() + 2 * foot_right_pose.Y());
-    } else {
-      std::cout << subgait_name << '\n';
-    }
+      if (subgait_name == "home_stand"){
+                goal_position_x = foot_left_pose.X();
+                goal_position_y = foot_left_pose.Y();
+      }
+      else if (subgait_name == "right_open") {
+                goal_position_x = foot_left_pose.X() - 0.5 * (time - subgait_start_time) *
+                                                       open_step_size / subgait_duration;
+                goal_position_y = foot_left_pose.Y();
+      }
+      else if (subgait_name == "right_swing") {
+                goal_position_x = foot_left_pose.X() + 0.25 * swing_step_size -
+                                                       0.5 * (time - subgait_start_time) * swing_step_size / subgait_duration;
+                goal_position_y = foot_left_pose.Y();
+      }
+      else if (subgait_name == "left_swing") {
+                goal_position_x = foot_right_pose.X() + 0.25 * swing_step_size -
+                                                        0.5 * (time - subgait_start_time) * swing_step_size / subgait_duration;
+                goal_position_y = foot_right_pose.Y();
+      }
+      else {
+          std::cout << subgait_name << '\n';
+      }
+
+
+
+
+
+//    if (subgait_name == "home_stand") {
+//      goal_position_y =
+//          foot_left_pose.Y();
+//    } else if (subgait_name == "right_open") {
+//        goal_position_y =
+//                foot_left_pose.Y();
+//    } else if (subgait_name == "right_swing") {
+//        goal_position_y =
+//                foot_left_pose.Y();
+//    } else if (subgait_name == "left_swing") {
+//      goal_position_y =
+//                foot_right_pose.Y();
+//    } else {
+//      std::cout << subgait_name << '\n';
+//    }
 
     double goal_roll = 0.5 * (foot_left_pose.Y() + foot_right_pose.Y());
     double error_x = model_com.X() - goal_position_x;
@@ -150,6 +178,10 @@ public:
                     this->d_roll * (error_y - this->error_y_last_timestep);
     double T_yaw = -this->p_yaw * error_yaw -
                    this->d_yaw * (error_yaw - this->error_yaw_last_timestep);
+
+    this->error_x_last_timestep = error_x;
+    this->error_y_last_timestep = error_y;
+    this->error_yaw_last_timestep = error_yaw;
 
     const ignition::math::v4::Vector3<double> torque_all(
         0, T_pitch, T_yaw); // -roll, pitch, -yaw

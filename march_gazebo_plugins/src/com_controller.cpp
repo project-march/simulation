@@ -71,69 +71,68 @@ public:
     this->subgait_start_time = this->model->GetWorld()->SimTime().Double();
   }
 
+  // Called by the world update start event
+  void onUpdate()
+  {
+    // Note: the exo moves in the negative x direction, and the right leg is in
+    // the positive y direction
+    double time_since_start = this->model->GetWorld()->SimTime().Double() - subgait_start_time;
+    auto model_com = this->GetCom();
 
-    // Called by the world update start event
-    void onUpdate()
+    // Left foot is stable unless subgait name starts with left
+    auto stable_foot_pose = this->foot_left->WorldCoGPose().Pos();
+    std::string stable_side = "left";
+    if (this->subgait_name.substr(0, 4) == "left")
     {
-        // Note: the exo moves in the negative x direction, and the right leg is in
-        // the positive y direction
-        double time_since_start = this->model->GetWorld()->SimTime().Double() - subgait_start_time;
-        auto model_com = this->GetCom();
-
-        // Left foot is stable unless subgait name starts with left
-        auto stable_foot_pose = this->foot_left->WorldCoGPose().Pos();
-        std::string stable_side = "left";
-        if (this->subgait_name.substr(0, 4) == "left")
-        {
-            stable_foot_pose = this->foot_right->WorldCoGPose().Pos();
-            stable_side = "right";
-        }
-
-        // Goal position is determined from the location of the stable foot
-        double goal_position_x = stable_foot_pose.X();
-        double goal_position_y = stable_foot_pose.Y();
-
-        // Start goal position a quarter step size behind the stable foot
-        // Move the goal position forward with v = 0.5 * swing_step_size/subgait_duration
-        if (this->subgait_name.substr(this->subgait_name.size() - 4) == "open")
-        {
-            goal_position_x += -0.25 * time_since_start * swing_step_size / subgait_duration;
-        }
-        else if (this->subgait_name.substr(this->subgait_name.size() - 5) == "swing")
-        {
-            goal_position_x += 0.25 * swing_step_size - 0.5 * time_since_start * swing_step_size / subgait_duration;
-        }
-        else if (this->subgait_name.substr(this->subgait_name.size() - 5) == "close")
-        {
-            goal_position_x += 0.25 * swing_step_size - 0.25 * time_since_start * swing_step_size / subgait_duration;
-        }
-
-        double error_x = model_com.X() - goal_position_x;
-        double error_y = model_com.Y() - goal_position_y;
-        double error_yaw = this->foot_left->WorldPose().Rot().Z();
-
-        double T_pitch = -this->p_pitch * error_x - this->d_pitch * (error_x - this->error_x_last_timestep);
-        double T_roll = this->p_roll * error_y + this->d_roll * (error_y - this->error_y_last_timestep);
-        double T_yaw = -this->p_yaw * error_yaw - this->d_yaw * (error_yaw - this->error_yaw_last_timestep);
-
-        const ignition::math::v4::Vector3<double> torque_all(0, T_pitch, T_yaw);  // -roll, pitch, -yaw
-        const ignition::math::v4::Vector3<double> torque_stable(T_roll, 0, 0);    // -roll, pitch, -yaw
-
-        for (auto const& link : this->model->GetLinks())
-        {
-            link->AddTorque(torque_all);
-
-            // Apply rolling torque to all links in the stable leg
-            if (link->GetName().find(stable_side) != std::string::npos)
-            {
-                link->AddTorque(torque_stable);
-            }
-        }
-
-        this->error_x_last_timestep = error_x;
-        this->error_y_last_timestep = error_y;
-        this->error_yaw_last_timestep = error_yaw;
+      stable_foot_pose = this->foot_right->WorldCoGPose().Pos();
+      stable_side = "right";
     }
+
+    // Goal position is determined from the location of the stable foot
+    double goal_position_x = stable_foot_pose.X();
+    double goal_position_y = stable_foot_pose.Y();
+
+    // Start goal position a quarter step size behind the stable foot
+    // Move the goal position forward with v = 0.5 * swing_step_size/subgait_duration
+    if (this->subgait_name.substr(this->subgait_name.size() - 4) == "open")
+    {
+      goal_position_x += -0.25 * time_since_start * swing_step_size / subgait_duration;
+    }
+    else if (this->subgait_name.substr(this->subgait_name.size() - 5) == "swing")
+    {
+      goal_position_x += 0.25 * swing_step_size - 0.5 * time_since_start * swing_step_size / subgait_duration;
+    }
+    else if (this->subgait_name.substr(this->subgait_name.size() - 5) == "close")
+    {
+      goal_position_x += 0.25 * swing_step_size - 0.25 * time_since_start * swing_step_size / subgait_duration;
+    }
+
+    double error_x = model_com.X() - goal_position_x;
+    double error_y = model_com.Y() - goal_position_y;
+    double error_yaw = this->foot_left->WorldPose().Rot().Z();
+
+    double T_pitch = -this->p_pitch * error_x - this->d_pitch * (error_x - this->error_x_last_timestep);
+    double T_roll = this->p_roll * error_y + this->d_roll * (error_y - this->error_y_last_timestep);
+    double T_yaw = -this->p_yaw * error_yaw - this->d_yaw * (error_yaw - this->error_yaw_last_timestep);
+
+    const ignition::math::v4::Vector3<double> torque_all(0, T_pitch, T_yaw);  // -roll, pitch, -yaw
+    const ignition::math::v4::Vector3<double> torque_stable(T_roll, 0, 0);    // -roll, pitch, -yaw
+
+    for (auto const& link : this->model->GetLinks())
+    {
+      link->AddTorque(torque_all);
+
+      // Apply rolling torque to all links in the stable leg
+      if (link->GetName().find(stable_side) != std::string::npos)
+      {
+        link->AddTorque(torque_stable);
+      }
+    }
+
+    this->error_x_last_timestep = error_x;
+    this->error_y_last_timestep = error_y;
+    this->error_yaw_last_timestep = error_yaw;
+  }
 
 private:
   void queueThread()

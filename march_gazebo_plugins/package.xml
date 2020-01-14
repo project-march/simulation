@@ -8,6 +8,8 @@
 
   <license>TODO</license>
 
+  <build_depend>gazebo_ros</build_depend>
+
   <buildtool_depend>catkin</buildtool_depend>
 
   <depend>gazebo_ros</depend>

@@ -9,7 +9,7 @@ namespace gazebo
 class ComController : public ModelPlugin
 {
 public:
-  void Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/)
+  void Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/) override
   {
     // Make sure the ROS node for Gazebo has already been initialized
     if (!ros::isInitialized())
@@ -42,23 +42,22 @@ public:
 
     // Listen to the update event. This event is broadcast every
     // simulation iteration.
-    this->updateConnection = event::Events::ConnectWorldUpdateBegin(std::bind(&ComController::OnUpdate, this));
+    this->update_connection = event::Events::ConnectWorldUpdateBegin(std::bind(&ComController::onUpdate, this));
 
     // Create our ROS node.
-    this->rosNode.reset(new ros::NodeHandle("gazebo_client"));
+    this->ros_node = std::make_unique<ros::NodeHandle>(ros::NodeHandle("gazebo_client"));
 
     // Create a named topic, and subscribe to it.
     ros::SubscribeOptions so = ros::SubscribeOptions::create<march_shared_resources::GaitActionGoal>(
-        "/march/gait/schedule/goal", 1, boost::bind(&ComController::OnRosMsg, this, _1), ros::VoidPtr(),
-        &this->rosQueue);
-    this->rosSub = this->rosNode->subscribe(so);
+        "/march/gait/schedule/goal", 1, boost::bind(&ComController::onRosMsg, this, _1), ros::VoidPtr(),
+        &this->ros_queue);
+    this->ros_sub = this->ros_node->subscribe(so);
 
     // Spin up the queue helper thread.
-    this->rosQueueThread = std::thread(std::bind(&ComController::QueueThread, this));
+    this->ros_queue_thread = std::thread(std::bind(&ComController::queueThread, this));
   }
 
-public:
-  void OnRosMsg(const march_shared_resources::GaitActionGoalConstPtr& _msg)
+  void onRosMsg(const march_shared_resources::GaitActionGoalConstPtr& _msg)
   {
     if (this->subgait_name == "right_open" or this->subgait_name == "right_swing" or this->subgait_name == "left_swing")
     {
@@ -72,22 +71,84 @@ public:
     this->subgait_start_time = this->model->GetWorld()->SimTime().Double();
   }
 
-  /// \brief ROS helper function that processes messages
+
+    // Called by the world update start event
+    void onUpdate()
+    {
+        // Note: the exo moves in the negative x direction, and the right leg is in
+        // the positive y direction
+        double time_since_start = this->model->GetWorld()->SimTime().Double() - subgait_start_time;
+        auto model_com = this->GetCom();
+
+        // Left foot is stable unless subgait name starts with left
+        auto stable_foot_pose = this->foot_left->WorldCoGPose().Pos();
+        std::string stable_side = "left";
+        if (this->subgait_name.substr(0, 4) == "left")
+        {
+            stable_foot_pose = this->foot_right->WorldCoGPose().Pos();
+            stable_side = "right";
+        }
+
+        // Goal position is determined from the location of the stable foot
+        double goal_position_x = stable_foot_pose.X();
+        double goal_position_y = stable_foot_pose.Y();
+
+        // Start goal position a quarter step size behind the stable foot
+        // Move the goal position forward with v = 0.5 * swing_step_size/subgait_duration
+        if (this->subgait_name.substr(this->subgait_name.size() - 4) == "open")
+        {
+            goal_position_x += -0.25 * time_since_start * swing_step_size / subgait_duration;
+        }
+        else if (this->subgait_name.substr(this->subgait_name.size() - 5) == "swing")
+        {
+            goal_position_x += 0.25 * swing_step_size - 0.5 * time_since_start * swing_step_size / subgait_duration;
+        }
+        else if (this->subgait_name.substr(this->subgait_name.size() - 5) == "close")
+        {
+            goal_position_x += 0.25 * swing_step_size - 0.25 * time_since_start * swing_step_size / subgait_duration;
+        }
+
+        double error_x = model_com.X() - goal_position_x;
+        double error_y = model_com.Y() - goal_position_y;
+        double error_yaw = this->foot_left->WorldPose().Rot().Z();
+
+        double T_pitch = -this->p_pitch * error_x - this->d_pitch * (error_x - this->error_x_last_timestep);
+        double T_roll = this->p_roll * error_y + this->d_roll * (error_y - this->error_y_last_timestep);
+        double T_yaw = -this->p_yaw * error_yaw - this->d_yaw * (error_yaw - this->error_yaw_last_timestep);
+
+        const ignition::math::v4::Vector3<double> torque_all(0, T_pitch, T_yaw);  // -roll, pitch, -yaw
+        const ignition::math::v4::Vector3<double> torque_stable(T_roll, 0, 0);    // -roll, pitch, -yaw
+
+        for (auto const& link : this->model->GetLinks())
+        {
+            link->AddTorque(torque_all);
+
+            // Apply rolling torque to all links in the stable leg
+            if (link->GetName().find(stable_side) != std::string::npos)
+            {
+                link->AddTorque(torque_stable);
+            }
+        }
+
+        this->error_x_last_timestep = error_x;
+        this->error_y_last_timestep = error_y;
+        this->error_yaw_last_timestep = error_yaw;
+    }
+
 private:
-  void QueueThread()
+  void queueThread()
   {
     static const double timeout = 0.01;
-    while (this->rosNode->ok())
+    while (this->ros_node->ok())
     {
-      this->rosQueue.callAvailable(ros::WallDuration(timeout));
+      this->ros_queue.callAvailable(ros::WallDuration(timeout));
     }
   }
 
   // Called by the world update start event
-private:
-  double GetMass()
+  double getMass()
   {
-    double mass;
+    double mass = 0.0;
     for (auto const& link : this->model->GetLinks())
     {
       mass += link->GetInertial()->Mass();
@@ -96,7 +157,6 @@ private:
   }
 
   // Called by the world update start event
-private:
   ignition::math::v4::Vector3<double> GetCom()
   {
     ignition::math::v4::Vector3<double> com(0.0, 0.0, 0.0);
@@ -104,80 +164,18 @@ private:
     {
       com += link->WorldCoGPose().Pos() * link->GetInertial()->Mass();
     }
-    return com / this->GetMass();
+    return com / this->getMass();
   }
 
-  // Called by the world update start event
-public:
-  void OnUpdate()
-  {
-    // Note: the exo moves in the negative x direction, and the right leg is in
-    // the positive y direction
-    double time_since_start = this->model->GetWorld()->SimTime().Double() - subgait_start_time;
-    auto model_com = this->GetCom();
-
-    // Left foot is stable unless subgait name starts with left
-    auto stable_foot_pose = this->foot_left->WorldCoGPose().Pos();
-    std::string stable_side = "left";
-    if (this->subgait_name.substr(0, 4) == "left")
-    {
-      stable_foot_pose = this->foot_right->WorldCoGPose().Pos();
-      stable_side = "right";
-    }
-
-    // Goal position is determined from the location of the stable foot
-    double goal_position_x = stable_foot_pose.X();
-    double goal_position_y = stable_foot_pose.Y();
-
-    // Start goal position a quarter step size behind the stable foot
-    // Move the goal position forward with v = 0.5 * swing_step_size/subgait_duration
-    if (this->subgait_name.substr(this->subgait_name.size() - 4) == "open")
-    {
-      goal_position_x += -0.25 * time_since_start * swing_step_size / subgait_duration;
-    }
-    else if (this->subgait_name.substr(this->subgait_name.size() - 5) == "swing")
-    {
-      goal_position_x += 0.25 * swing_step_size - 0.5 * time_since_start * swing_step_size / subgait_duration;
-    }
-    else if (this->subgait_name.substr(this->subgait_name.size() - 5) == "close")
-    {
-      goal_position_x += 0.25 * swing_step_size - 0.25 * time_since_start * swing_step_size / subgait_duration;
-    }
-
-    double error_x = model_com.X() - goal_position_x;
-    double error_y = model_com.Y() - goal_position_y;
-    double error_yaw = this->foot_left->WorldPose().Rot().Z();
-
-    double T_pitch = -this->p_pitch * error_x - this->d_pitch * (error_x - this->error_x_last_timestep);
-    double T_roll = this->p_roll * error_y + this->d_roll * (error_y - this->error_y_last_timestep);
-    double T_yaw = -this->p_yaw * error_yaw - this->d_yaw * (error_yaw - this->error_yaw_last_timestep);
-
-    const ignition::math::v4::Vector3<double> torque_all(0, T_pitch, T_yaw);  // -roll, pitch, -yaw
-    const ignition::math::v4::Vector3<double> torque_stable(T_roll, 0, 0);    // -roll, pitch, -yaw
-
-    for (auto const& link : this->model->GetLinks())
-    {
-      link->AddTorque(torque_all);
-
-      // Apply rolling torque to all links in the stable leg
-      if (link->GetName().find(stable_side) != std::string::npos)
-      {
-        link->AddTorque(torque_stable);
-      }
-    }
-
-    this->error_x_last_timestep = error_x;
-    this->error_y_last_timestep = error_y;
-    this->error_yaw_last_timestep = error_yaw;
-  }
-
-private:
   physics::ModelPtr model;
   physics::LinkPtr foot_left;
   physics::LinkPtr foot_right;
+
   double subgait_start_time;
   double swing_step_size;
   double subgait_duration;
+  std::string subgait_name;
+
   double p_yaw;
   double d_yaw;
   double p_pitch;
@@ -187,22 +185,21 @@ private:
   double error_x_last_timestep;
   double error_y_last_timestep;
   double error_yaw_last_timestep;
-  std::string subgait_name;
 
   // Pointer to the update event connection
-  event::ConnectionPtr updateConnection;
+  event::ConnectionPtr update_connection;
 
   /// \brief A node use for ROS transport
-  std::unique_ptr<ros::NodeHandle> rosNode;
+  std::unique_ptr<ros::NodeHandle> ros_node;
 
   /// \brief A ROS subscriber
-  ros::Subscriber rosSub;
+  ros::Subscriber ros_sub;
 
   /// \brief A ROS callbackqueue that helps process messages
-  ros::CallbackQueue rosQueue;
+  ros::CallbackQueue ros_queue;
 
-  /// \brief A thread the keeps running the rosQueue
-  std::thread rosQueueThread;
+  /// \brief A thread the keeps running the ros_queue
+  std::thread ros_queue_thread;
 };
 
 // Register this plugin with the simulator

@@ -105,8 +105,9 @@ public:
     else if (this->subgait_name.substr(this->subgait_name.size() - 5) == "close")
     {
       goal_position_x += 0.25 * swing_step_size - 0.25 * time_since_start * swing_step_size / subgait_duration;
-      if (time_since_start > subgait_duration) {
-          this->subgait_name = "home_stand";
+      if (time_since_start > subgait_duration)
+      {
+        this->subgait_name = "home_stand";
       }
     }
 

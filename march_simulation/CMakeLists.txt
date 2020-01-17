@@ -23,3 +23,7 @@ catkin_install_python(PROGRAMS scripts/upload_joint_names scripts/to_world_trans
 install(DIRECTORY config launch worlds
     DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
+
+install(DIRECTORY obstacles
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+        )

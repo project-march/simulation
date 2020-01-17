@@ -2,6 +2,7 @@
 <robot name="stairs" xmlns:xacro="http://www.ros.org/wiki/xacro">
     <static>true</static>
 
+    <!-- Sizes from the rules of the cybathlon 2020 -->
     <xacro:property name="step_height" default="0.170"/>
     <xacro:property name="step_depth" default="0.280"/>
     <xacro:property name="stairs_width" default="1.206"/>

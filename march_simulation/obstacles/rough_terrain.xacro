@@ -1,8 +1,14 @@
 <?xml version="1.0"?>
-<robot name="stairs" xmlns:xacro="http://www.ros.org/wiki/xacro">
-    <static>true</static>
+<robot name="rough_terrrain" xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <gazebo>
+        <static>true</static>
+    </gazebo>
 
     <!-- Sizes from the rules of the cybathlon 2020 -->
+    <xacro:property name="plate_height" default="0.022"/>
+    <xacro:property name="plate_length" default="3.88"/>
+    <xacro:property name="plate_width" default="1.95"/>
+
     <xacro:property name="long_block_width" default="0.04"/>
     <xacro:property name="long_block_length" default="1.15"/>
     <xacro:property name="short_block_width" default="0.06"/>
@@ -27,16 +33,41 @@
 
 
     <!-- Links -->
-    <link name="step_1">
+    <link name="fix_plate">
         <collision>
-          <geometry>
-            <box size="${stairs_length} ${stairs_width} ${step_height}" />
-          </geometry>
+            <geometry>
+                <box size="${plate_length + 2} ${plate_width + 2} ${plate_height}" />
+            </geometry>
+        </collision>
+
+        <visual name='visual'>
+            <geometry>
+                <box size="${plate_length + 2} ${plate_width + 2} ${plate_height}" />
+            </geometry>
+        </visual>
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <mass value="1"/>
+            <inertia
+                    ixx="1"
+                    ixy="1"
+                    ixz="1"
+                    iyy="1"
+                    iyz="1"
+                    izz="1" />
+        </inertial>
+    </link>
+
+    <link name="bottom_plate">
+        <collision>
+            <geometry>
+                <box size="${plate_length} ${plate_width} ${plate_height}" />
+            </geometry>
         </collision>
 
         <visual name='visual'>
           <geometry>
-            <box size="${stairs_length} ${stairs_width} ${step_height}" />
+            <box size="${plate_length} ${plate_width} ${plate_height}" />
           </geometry>
         </visual>
         <inertial>
@@ -52,157 +83,509 @@
         </inertial>
     </link>
 
-    <link name="step_2">
+    <link name="long_block_1">
         <collision>
           <origin xyz="0 0 0" rpy="0 0 0"/>
           <geometry>
-            <box size="${stairs_length - 2 * step_depth} ${stairs_width} ${step_height}" />
+            <box size="${long_block_length} ${long_block_width} ${long_block_width}" />
           </geometry>
         </collision>
 
         <visual name='visual'>
           <origin xyz="0 0 0" rpy="0 0 0"/>
           <geometry>
-            <box size="${stairs_length - 2 * step_depth} ${stairs_width} ${step_height}" />
+            <box size="${long_block_length} ${long_block_width} ${long_block_width}" />
           </geometry>
         </visual>
     </link>
 
-    <link name="step_3">
+    <link name="long_block_2">
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <box size="${long_block_length} ${long_block_width} ${long_block_width}" />
+            </geometry>
+        </collision>
+
+        <visual name='visual'>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <box size="${long_block_length} ${long_block_width} ${long_block_width}" />
+            </geometry>
+        </visual>
+    </link>
+
+    <link name="short_block_1">
         <collision>
           <origin xyz="0 0 0" rpy="0 0 0"/>
           <geometry>
-            <box size="${stairs_length - 4 * step_depth} ${stairs_width} ${step_height}" />
+            <box size="${short_block_length} ${short_block_width} ${short_block_width}" />
           </geometry>
         </collision>
 
         <visual name='visual'>
           <origin xyz="0 0 0" rpy="0 0 0"/>
           <geometry>
-            <box size="${stairs_length - 4 * step_depth} ${stairs_width} ${step_height}" />
+            <box size="${short_block_length} ${short_block_width} ${short_block_width}" />
           </geometry>
         </visual>
     </link>
 
-    <link name="step_4">
+    <link name="short_block_2">
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <box size="${short_block_length} ${short_block_width} ${short_block_width}" />
+            </geometry>
+        </collision>
+
+        <visual name='visual'>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <box size="${short_block_length} ${short_block_width} ${short_block_width}" />
+            </geometry>
+        </visual>
+    </link>
+
+    <link name="side_rod_1">
         <collision>
           <origin xyz="0 0 0" rpy="0 0 0"/>
           <geometry>
-            <box size="${stairs_length - 6 * step_depth} ${stairs_width} ${step_height}" />
+            <cylinder length="${side_rods_length}" radius="${side_rods_radius}" />
           </geometry>
         </collision>
 
         <visual name='visual'>
           <origin xyz="0 0 0" rpy="0 0 0"/>
           <geometry>
-            <box size="${stairs_length - 6 * step_depth} ${stairs_width} ${step_height}" />
+            <cylinder length="${side_rods_length}" radius="${side_rods_radius}" />
           </geometry>
         </visual>
     </link>
 
-    <link name="step_5">
+    <link name="side_rod_2">
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <cylinder length="${side_rods_length}" radius="${side_rods_radius}" />
+            </geometry>
+        </collision>
+
+        <visual name='visual'>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <cylinder length="${side_rods_length}" radius="${side_rods_radius}" />
+            </geometry>
+        </visual>
+    </link>
+
+    <link name="side_rod_3">
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <cylinder length="${side_rods_length}" radius="${side_rods_radius}" />
+            </geometry>
+        </collision>
+
+        <visual name='visual'>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <cylinder length="${side_rods_length}" radius="${side_rods_radius}" />
+            </geometry>
+        </visual>
+    </link>
+
+    <link name="side_rod_4">
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <cylinder length="${side_rods_length}" radius="${side_rods_radius}" />
+            </geometry>
+        </collision>
+
+        <visual name='visual'>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <cylinder length="${side_rods_length}" radius="${side_rods_radius}" />
+            </geometry>
+        </visual>
+    </link>
+
+    <link name="side_rod_5">
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <cylinder length="${side_rods_length}" radius="${side_rods_radius}" />
+            </geometry>
+        </collision>
+
+        <visual name='visual'>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <cylinder length="${side_rods_length}" radius="${side_rods_radius}" />
+            </geometry>
+        </visual>
+    </link>
+
+    <link name="side_rod_6">
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <cylinder length="${side_rods_length}" radius="${side_rods_radius}" />
+            </geometry>
+        </collision>
+
+        <visual name='visual'>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <cylinder length="${side_rods_length}" radius="${side_rods_radius}" />
+            </geometry>
+        </visual>
+    </link>
+
+    <link name="side_rod_7">
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <cylinder length="${side_rods_length}" radius="${side_rods_radius}" />
+            </geometry>
+        </collision>
+
+        <visual name='visual'>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <cylinder length="${side_rods_length}" radius="${side_rods_radius}" />
+            </geometry>
+        </visual>
+    </link>
+
+    <link name="side_rod_8">
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <cylinder length="${side_rods_length}" radius="${side_rods_radius}" />
+            </geometry>
+        </collision>
+
+        <visual name='visual'>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <cylinder length="${side_rods_length}" radius="${side_rods_radius}" />
+            </geometry>
+        </visual>
+    </link>
+
+    <link name="thick_rod_1">
         <collision>
           <origin xyz="0 0 0" rpy="0 0 0"/>
           <geometry>
-            <box size="${stairs_length - 8 * step_depth} ${stairs_width} ${step_height}" />
+            <cylinder length="${middle_rods_length}" radius="${thick_rod_radius}" />
           </geometry>
         </collision>
 
         <visual name='visual'>
           <origin xyz="0 0 0" rpy="0 0 0"/>
           <geometry>
-            <box size="${stairs_length - 8 * step_depth} ${stairs_width} ${step_height}" />
+              <cylinder length="${middle_rods_length}" radius="${thick_rod_radius}" />
           </geometry>
         </visual>
     </link>
 
-    <link name="step_6">
+    <link name="thick_rod_2">
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <cylinder length="${middle_rods_length}" radius="${thick_rod_radius}" />
+            </geometry>
+        </collision>
+
+        <visual name='visual'>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <cylinder length="${middle_rods_length}" radius="${thick_rod_radius}" />
+            </geometry>
+        </visual>
+    </link>
+
+    <link name="thick_rod_3">
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <cylinder length="${middle_rods_length}" radius="${thick_rod_radius}" />
+            </geometry>
+        </collision>
+
+        <visual name='visual'>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <cylinder length="${middle_rods_length}" radius="${thick_rod_radius}" />
+            </geometry>
+        </visual>
+    </link>
+
+
+    <link name="thin_rod_1">
         <collision>
           <origin xyz="0 0 0" rpy="0 0 0"/>
           <geometry>
-            <box size="${stairs_length - 10 * step_depth} ${stairs_width} ${step_height}" />
+              <cylinder length="${middle_rods_length}" radius="${thin_rod_radius}" />
           </geometry>
         </collision>
 
         <visual name='visual'>
           <origin xyz="0 0 0" rpy="0 0 0"/>
           <geometry>
-            <box size="${stairs_length - 10 * step_depth} ${stairs_width} ${step_height}" />
+              <cylinder length="${middle_rods_length}" radius="${thin_rod_radius}" />
           </geometry>
         </visual>
     </link>
 
-    <gazebo reference="step_1">
+    <link name="thin_rod_2">
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <cylinder length="${middle_rods_length}" radius="${thin_rod_radius}" />
+            </geometry>
+        </collision>
+
+        <visual name='visual'>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <cylinder length="${middle_rods_length}" radius="${thin_rod_radius}" />
+            </geometry>
+        </visual>
+    </link>
+
+    <gazebo reference="bottom_plate">
         <mu1>${mu1}</mu1>
         <mu2>${mu2}</mu2>
         <minDepth>${min_depth}</minDepth>
     </gazebo>
 
-    <gazebo reference="step_2">
+    <gazebo reference="fix_plate">
         <mu1>${mu1}</mu1>
         <mu2>${mu2}</mu2>
         <minDepth>${min_depth}</minDepth>
     </gazebo>
 
-    <gazebo reference="step_3">
+    <gazebo reference="long_block_1">
         <mu1>${mu1}</mu1>
         <mu2>${mu2}</mu2>
         <minDepth>${min_depth}</minDepth>
     </gazebo>
 
-    <gazebo reference="step_4">
+    <gazebo reference="long_block_2">
         <mu1>${mu1}</mu1>
         <mu2>${mu2}</mu2>
         <minDepth>${min_depth}</minDepth>
     </gazebo>
 
-    <gazebo reference="step_5">
+    <gazebo reference="short_block_1">
         <mu1>${mu1}</mu1>
         <mu2>${mu2}</mu2>
         <minDepth>${min_depth}</minDepth>
     </gazebo>
 
-    <gazebo reference="step_6">
+    <gazebo reference="short_block_2">
+        <mu1>${mu1}</mu1>
+        <mu2>${mu2}</mu2>
+        <minDepth>${min_depth}</minDepth>
+    </gazebo>
+
+    <gazebo reference="side_rod_1">
+        <mu1>${mu1}</mu1>
+        <mu2>${mu2}</mu2>
+        <minDepth>${min_depth}</minDepth>
+    </gazebo>
+
+    <gazebo reference="side_rod_2">
+        <mu1>${mu1}</mu1>
+        <mu2>${mu2}</mu2>
+        <minDepth>${min_depth}</minDepth>
+    </gazebo>
+
+    <gazebo reference="side_rod_3">
+        <mu1>${mu1}</mu1>
+        <mu2>${mu2}</mu2>
+        <minDepth>${min_depth}</minDepth>
+    </gazebo>
+
+    <gazebo reference="side_rod_4">
+        <mu1>${mu1}</mu1>
+        <mu2>${mu2}</mu2>
+        <minDepth>${min_depth}</minDepth>
+    </gazebo>
+
+    <gazebo reference="side_rod_5">
+        <mu1>${mu1}</mu1>
+        <mu2>${mu2}</mu2>
+        <minDepth>${min_depth}</minDepth>
+    </gazebo>
+
+    <gazebo reference="side_rod_6">
+        <mu1>${mu1}</mu1>
+        <mu2>${mu2}</mu2>
+        <minDepth>${min_depth}</minDepth>
+    </gazebo>
+
+    <gazebo reference="side_rod_7">
+        <mu1>${mu1}</mu1>
+        <mu2>${mu2}</mu2>
+        <minDepth>${min_depth}</minDepth>
+    </gazebo>
+
+    <gazebo reference="side_rod_8">
+        <mu1>${mu1}</mu1>
+        <mu2>${mu2}</mu2>
+        <minDepth>${min_depth}</minDepth>
+    </gazebo>
+
+    <gazebo reference="thick_rod_1">
+        <mu1>${mu1}</mu1>
+        <mu2>${mu2}</mu2>
+        <minDepth>${min_depth}</minDepth>
+    </gazebo>
+
+    <gazebo reference="thick_rod_2">
+        <mu1>${mu1}</mu1>
+        <mu2>${mu2}</mu2>
+        <minDepth>${min_depth}</minDepth>
+    </gazebo>
+
+    <gazebo reference="thick_rod_3">
+        <mu1>${mu1}</mu1>
+        <mu2>${mu2}</mu2>
+        <minDepth>${min_depth}</minDepth>
+    </gazebo>
+
+
+    <gazebo reference="thin_rod_1">
+        <mu1>${mu1}</mu1>
+        <mu2>${mu2}</mu2>
+        <minDepth>${min_depth}</minDepth>
+    </gazebo>
+
+    <gazebo reference="thin_rod_2">
         <mu1>${mu1}</mu1>
         <mu2>${mu2}</mu2>
         <minDepth>${min_depth}</minDepth>
     </gazebo>
 
     <!-- Joints -->
-    <joint name="hip" type="fixed">
+
+    <joint name="joint_fix" type="fixed">
         <parent link="${parent_name}"/>
-        <child link="step_1"/>
-        <origin xyz="${-distance_to_origin - stairs_length / 2} 0 ${step_height / 2}" rpy="0 0 0"/>
+        <child link="fix_plate"/>
+        <origin xyz="${- plate_length} 0 ${plate_height}" rpy="0 0 0"/>
     </joint>
 
+    <joint name="joint_0" type="fixed">
+        <parent link="fix_plate"/>
+        <child link="bottom_plate"/>
+        <origin xyz="0 0 ${plate_height}" rpy="0 0 0"/>
+    </joint>
+
+
     <joint name="joint_1" type="fixed">
-        <parent link="step_1"/>
-        <child link="step_2"/>
-        <origin xyz="0 0 ${step_height}" rpy="0 0 0"/>
+        <parent link="bottom_plate"/>
+        <child link="side_rod_1"/>
+        <origin xyz="${plate_length / 2 - 0.33} -0.65 ${plate_height / 2}" rpy="${0.5 * pi} 0 ${0.25 * pi}"/>
     </joint>
 
     <joint name="joint_2" type="fixed">
-        <parent link="step_2"/>
-        <child link="step_3"/>
-        <origin xyz="0 0 ${step_height}" rpy="0 0 0"/>
+        <parent link="bottom_plate"/>
+        <child link="side_rod_2"/>
+        <origin xyz="${plate_length / 2 - 0.33} 0.65 ${plate_height / 2}" rpy="${0.5 * pi} 0 ${0.75 * pi}"/>
     </joint>
 
     <joint name="joint_3" type="fixed">
-        <parent link="step_3"/>
-        <child link="step_4"/>
-        <origin xyz="0 0 ${step_height}" rpy="0 0 0"/>
+        <parent link="bottom_plate"/>
+        <child link="side_rod_3"/>
+        <origin xyz="${plate_length / 2 - 0.93} 0.65 ${plate_height / 2}" rpy="${0.5 * pi} 0 ${0.75 * pi}"/>
     </joint>
 
     <joint name="joint_4" type="fixed">
-        <parent link="step_4"/>
-        <child link="step_5"/>
-        <origin xyz="0 0 ${step_height}" rpy="0 0 0"/>
+        <parent link="bottom_plate"/>
+        <child link="side_rod_4"/>
+        <origin xyz="${plate_length / 2 - 0.93} -0.65 ${plate_height / 2}" rpy="${0.5 * pi} 0 ${0.25 * pi}"/>
     </joint>
 
     <joint name="joint_5" type="fixed">
-        <parent link="step_5"/>
-        <child link="step_6"/>
-        <origin xyz="0 0 ${step_height}" rpy="0 0 0"/>
+        <parent link="bottom_plate"/>
+        <child link="side_rod_5"/>
+        <origin xyz="${-plate_length / 2 + 0.33} -0.65 ${plate_height / 2}" rpy="${0.5 * pi} 0 ${0.75 * pi}"/>
+    </joint>
+
+    <joint name="joint_6" type="fixed">
+        <parent link="bottom_plate"/>
+        <child link="side_rod_6"/>
+        <origin xyz="${-plate_length / 2 + 0.33} 0.65 ${plate_height / 2}" rpy="${0.5 * pi} 0 ${0.25 * pi}"/>
+    </joint>
+
+    <joint name="joint_7" type="fixed">
+        <parent link="bottom_plate"/>
+        <child link="side_rod_7"/>
+        <origin xyz="${-plate_length / 2 + 0.93} 0.65 ${plate_height / 2}" rpy="${0.5 * pi} 0 ${0.25 * pi}"/>
+    </joint>
+
+    <joint name="joint_8" type="fixed">
+        <parent link="bottom_plate"/>
+        <child link="side_rod_8"/>
+        <origin xyz="${-plate_length / 2 + 0.93} -0.65 ${plate_height / 2}" rpy="${0.5 * pi} 0 ${0.75 * pi}"/>
+    </joint>
+
+    <joint name="joint_9" type="fixed">
+        <parent link="bottom_plate"/>
+        <child link="thick_rod_1"/>
+        <origin xyz="0 0 ${plate_height / 2}" rpy="${0.5 * pi} 0 0"/>
+    </joint>
+
+    <joint name="joint_10" type="fixed">
+        <parent link="bottom_plate"/>
+        <child link="thick_rod_2"/>
+        <origin xyz="${-plate_length / 2 + 1.64} 0 ${plate_height / 2}" rpy="${0.5 * pi} 0 0"/>
+    </joint>
+
+    <joint name="joint_11" type="fixed">
+        <parent link="bottom_plate"/>
+        <child link="thick_rod_3"/>
+        <origin xyz="${plate_length / 2 - 1.64} 0 ${plate_height / 2}" rpy="${0.5 * pi} 0 0"/>
+    </joint>
+
+    <joint name="joint_12" type="fixed">
+        <parent link="bottom_plate"/>
+        <child link="thin_rod_1"/>
+        <origin xyz="${-plate_length / 2 + 1.79} 0 ${plate_height / 2}" rpy="${0.5 * pi} 0 0"/>
+    </joint>
+
+    <joint name="joint_13" type="fixed">
+        <parent link="bottom_plate"/>
+        <child link="thin_rod_2"/>
+        <origin xyz="${plate_length / 2 - 1.79} 0 ${plate_height / 2}" rpy="${0.5 * pi} 0 0"/>
+    </joint>
+
+    <joint name="joint_14" type="fixed">
+        <parent link="bottom_plate"/>
+        <child link="long_block_1"/>
+        <origin xyz="${-plate_length / 2 + 0.11} 0 ${plate_height / 2 + long_block_width}" rpy="0 0 ${0.5 * pi}"/>
+    </joint>
+
+    <joint name="joint_15" type="fixed">
+        <parent link="bottom_plate"/>
+        <child link="long_block_2"/>
+        <origin xyz="${plate_length / 2 - 0.11} 0 ${plate_height / 2 + long_block_width}" rpy="0 0 ${0.5 * pi}"/>
+    </joint>
+
+    <joint name="joint_16" type="fixed">
+        <parent link="bottom_plate"/>
+        <child link="short_block_1"/>
+        <origin xyz="${plate_length / 2 - 0.86} 0 ${plate_height / 2 + short_block_width}" rpy="0 0 ${0.5 * pi}"/>
+    </joint>
+
+    <joint name="joint_17" type="fixed">
+        <parent link="bottom_plate"/>
+        <child link="short_block_2"/>
+        <origin xyz="${-plate_length / 2 + 0.86} 0 ${plate_height / 2 + short_block_width}" rpy="0 0 ${0.5 * pi}"/>
     </joint>
 
 </robot>

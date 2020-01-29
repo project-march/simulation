@@ -4,10 +4,10 @@
 
     <!-- Sizes from the rules of the cybathlon 2020 -->
     <xacro:property name="middle_block_length" default="3"/>
-    <xacro:property name="middle_block_width" default="1.5"/>
+    <xacro:property name="middle_block_width" default="1.474"/>
     <xacro:property name="middle_block_height" default="0.5"/>
     <xacro:property name="middle_block_angle" default="0.21"/>
-    <xacro:property name="side_blocks_length" default="1.5"/>
+    <xacro:property name="side_blocks_length" default="1.474"/>
     <xacro:property name="side_blocks_width" default="1.5"/>
     <xacro:property name="side_blocks_height" default="0.5"/>
     <xacro:property name="side_blocks_angle" default="0.192"/>
@@ -106,19 +106,19 @@
     <joint name="hip" type="fixed">
         <parent link="${parent_name}"/>
         <child link="middle_block"/>
-        <origin xyz="${-distance_to_origin} 0 0" rpy="${- middle_block_angle} 0 0"/>
+        <origin xyz="${-distance_to_origin-2.5} 0 -0.15" rpy="${- middle_block_angle} 0 0"/>
     </joint>
 
     <joint name="joint_1" type="fixed">
         <parent link="middle_block"/>
         <child link="side_block_1"/>
-        <origin xyz="2.1 0 -0.2" rpy="${- middle_block_angle} ${side_blocks_angle} 0"/>
+        <origin xyz="2.17 0.01 -0.135" rpy="0 ${side_blocks_angle} 0"/>
     </joint>
 
     <joint name="joint_2" type="fixed">
         <parent link="middle_block"/>
         <child link="side_block_2"/>
-        <origin xyz="-2.1 0 -0.2" rpy="${- middle_block_angle} ${-side_blocks_angle} 0"/>
+        <origin xyz="-2.17 0.01 -0.135" rpy="0 ${-side_blocks_angle} 0"/>
     </joint>
 
 </robot>

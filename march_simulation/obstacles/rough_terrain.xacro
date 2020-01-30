@@ -33,30 +33,30 @@
 
 
     <!-- Links -->
-    <link name="fix_plate">
-        <collision>
-            <geometry>
-                <box size="${plate_length + 2} ${plate_width + 2} ${plate_height}" />
-            </geometry>
-        </collision>
+<!--    <link name="fix_plate">-->
+<!--        <collision>-->
+<!--            <geometry>-->
+<!--                <box size="${plate_length + 2} ${plate_width + 2} ${plate_height}" />-->
+<!--            </geometry>-->
+<!--        </collision>-->
 
-        <visual name='visual'>
-            <geometry>
-                <box size="${plate_length + 2} ${plate_width + 2} ${plate_height}" />
-            </geometry>
-        </visual>
-        <inertial>
-            <origin xyz="0 0 0" rpy="0 0 0"/>
-            <mass value="1"/>
-            <inertia
-                    ixx="1"
-                    ixy="1"
-                    ixz="1"
-                    iyy="1"
-                    iyz="1"
-                    izz="1" />
-        </inertial>
-    </link>
+<!--        <visual name='visual'>-->
+<!--            <geometry>-->
+<!--                <box size="${plate_length + 2} ${plate_width + 2} ${plate_height}" />-->
+<!--            </geometry>-->
+<!--        </visual>-->
+<!--        <inertial>-->
+<!--            <origin xyz="0 0 0" rpy="0 0 0"/>-->
+<!--            <mass value="1"/>-->
+<!--            <inertia-->
+<!--                    ixx="1"-->
+<!--                    ixy="1"-->
+<!--                    ixz="1"-->
+<!--                    iyy="1"-->
+<!--                    iyz="1"-->
+<!--                    izz="1" />-->
+<!--        </inertial>-->
+<!--    </link>-->
 
     <link name="bottom_plate">
         <collision>
@@ -362,11 +362,11 @@
         <minDepth>${min_depth}</minDepth>
     </gazebo>
 
-    <gazebo reference="fix_plate">
-        <mu1>${mu1}</mu1>
-        <mu2>${mu2}</mu2>
-        <minDepth>${min_depth}</minDepth>
-    </gazebo>
+<!--    <gazebo reference="fix_plate">-->
+<!--        <mu1>${mu1}</mu1>-->
+<!--        <mu2>${mu2}</mu2>-->
+<!--        <minDepth>${min_depth}</minDepth>-->
+<!--    </gazebo>-->
 
     <gazebo reference="long_block_1">
         <mu1>${mu1}</mu1>
@@ -473,16 +473,16 @@
 
     <!-- Joints -->
 
-    <joint name="joint_fix" type="fixed">
-        <parent link="${parent_name}"/>
-        <child link="fix_plate"/>
-        <origin xyz="${- plate_length} 0 ${plate_height}" rpy="0 0 0"/>
-    </joint>
+<!--    <joint name="joint_fix" type="fixed">-->
+<!--        <parent link="${parent_name}"/>-->
+<!--        <child link="fix_plate"/>-->
+<!--        <origin xyz="${- plate_length} 0 ${plate_height}" rpy="0 0 0"/>-->
+<!--    </joint>-->
 
     <joint name="joint_0" type="fixed">
-        <parent link="fix_plate"/>
+        <parent link="${parent_name}"/>
         <child link="bottom_plate"/>
-        <origin xyz="0 0 ${plate_height}" rpy="0 0 0"/>
+        <origin xyz="-2.5  0 ${plate_height}" rpy="0 0 0"/>
     </joint>
 
 

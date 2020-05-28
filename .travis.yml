@@ -38,7 +38,9 @@ jobs:
     - name: "Melodic"
       env: ROS_DISTRO=melodic
     - name: "clang-format"
-      env: ROS_DISTRO=melodic CLANG_FORMAT_CHECK=file
+      env: ROS_DISTRO=noetic CLANG_FORMAT_CHECK=file
+    - name: "Noetic"
+      env: ROS_DISTRO=noetic
 
 # clone and run industrial_ci
 install:

@@ -8,14 +8,16 @@
 
 namespace gazebo
 {
+using ignition::math::v6::Vector3;
+
 class ObstacleController
 {
 public:
   explicit ObstacleController(physics::ModelPtr model);
 
   void newSubgait(const march_shared_resources::GaitActionGoalConstPtr& _msg);
-  ignition::math::v4::Vector3<double> GetCom();
-  void update(ignition::math::v4::Vector3<double>& torque_all, ignition::math::v4::Vector3<double>& torque_stable);
+  Vector3<double> GetCom();
+  void update(Vector3<double>& torque_all, Vector3<double>& torque_stable);
   void getGoalPosition(double time_since_start, double& goal_position_x, double& goal_position_y);
 
 protected:

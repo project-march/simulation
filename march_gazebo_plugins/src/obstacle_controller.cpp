@@ -48,9 +48,9 @@ void ObstacleController::newSubgait(const march_shared_resources::GaitActionGoal
 }
 
 // Called by the world update start event
-ignition::math::v4::Vector3<double> ObstacleController::GetCom()
+Vector3<double> ObstacleController::GetCom()
 {
-  ignition::math::v4::Vector3<double> com(0.0, 0.0, 0.0);
+  Vector3<double> com(0.0, 0.0, 0.0);
   for (auto const& link : this->model_->GetLinks())
   {
     com += link->WorldCoGPose().Pos() * link->GetInertial()->Mass();
@@ -58,8 +58,7 @@ ignition::math::v4::Vector3<double> ObstacleController::GetCom()
   return com / this->mass;
 }
 
-void ObstacleController::update(ignition::math::v4::Vector3<double>& torque_left,
-                                ignition::math::v4::Vector3<double>& torque_right)
+void ObstacleController::update(Vector3<double>& torque_left, Vector3<double>& torque_right)
 {
   // Note: the exo moves in the negative x direction, and the right leg is in
   // the positive y direction
@@ -99,13 +98,13 @@ void ObstacleController::update(ignition::math::v4::Vector3<double>& torque_left
 
   if (this->subgait_name_.substr(0, 4) == "left")
   {
-    torque_right = ignition::math::v4::Vector3<double>(T_roll, T_pitch, T_yaw);
-    torque_left = ignition::math::v4::Vector3<double>(0, 0, 0);
+    torque_right = Vector3<double>(T_roll, T_pitch, T_yaw);
+    torque_left = Vector3<double>(0, 0, 0);
   }
   else
   {
-    torque_left = ignition::math::v4::Vector3<double>(T_roll, T_pitch, T_yaw);
-    torque_right = ignition::math::v4::Vector3<double>(0, 0, 0);
+    torque_left = Vector3<double>(T_roll, T_pitch, T_yaw);
+    torque_right = Vector3<double>(0, 0, 0);
   }
 
   this->error_x_last_timestep_ = error_x;

@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
-<package format="2">
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
   <name>march_gazebo_plugins</name>
   <version>0.0.0</version>
   <description>The Gazebo plugins of the March simulation</description>
@@ -12,9 +13,9 @@
 
   <build_depend>gazebo</build_depend>
 
-  <depend>roscpp</depend>
   <depend>gazebo_ros</depend>
   <depend>march_shared_resources</depend>
+  <depend>roscpp</depend>
 
   <export>
     <gazebo_ros plugin_path="${prefix}/lib" gazebo_media_path="${prefix}" />

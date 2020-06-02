@@ -15,7 +15,10 @@ include_directories(
 catkin_package(
     INCLUDE_DIRS include
     LIBRARIES ${PROJECT_NAME}
-    CATKIN_DEPENDS march_shared_resources
+    CATKIN_DEPENDS
+    gazebo_ros
+    march_shared_resources
+    roscpp
 )
 
 add_library(${PROJECT_NAME}

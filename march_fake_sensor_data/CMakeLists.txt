@@ -18,7 +18,7 @@ catkin_package(
     sensor_msgs
 )
 
-add_executable(march_fake_temperature_data_node src/FakeTemperatureData.cpp)
+add_executable(march_fake_temperature_data_node src/fake_temperature_data.cpp)
 target_include_directories(march_fake_temperature_data_node PRIVATE ${catkin_INCLUDE_DIRS})
 add_dependencies(march_fake_temperature_data_node ${PROJECT_NAME}_gencfg ${catkin_EXPORTED_TARGETS})
 target_link_libraries(march_fake_temperature_data_node PRIVATE ${catkin_LIBRARIES})

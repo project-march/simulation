@@ -91,6 +91,26 @@ void ObstacleController::update(ignition::math::v4::Vector3<double>& torque_left
     this->subgait_changed_ = false;
   }
 
+    if (this->subgait_name_.substr(this->subgait_name_.size() - 5) == "swing")
+    {
+        error_x = 0;
+        error_y = 0;
+        error_yaw = 0;
+        this->error_yaw_last_timestep_ = error_yaw;
+        this->error_x_last_timestep_ = error_x;
+        this->error_y_last_timestep_ = error_y;
+    }
+    else if (this->subgait_name_.substr(this->subgait_name_.size() - 5) == "close")
+    {
+
+        error_x = 0;
+        error_y = 0;
+        error_yaw = 0;
+        this->error_yaw_last_timestep_ = error_yaw;
+        this->error_x_last_timestep_ = error_x;
+        this->error_y_last_timestep_ = error_y;
+    }
+
   // roll, pitch and yaw are defined in
   // https://docs.projectmarch.nl/doc/march_packages/march_simulation.html#torque-application
   double T_pitch = -this->p_pitch_ * error_x - this->d_pitch_ * (error_x - this->error_x_last_timestep_);
@@ -137,15 +157,11 @@ void ObstacleController::getGoalPosition(double time_since_start, double& goal_p
   {
     goal_position_x +=
         0.25 * this->swing_step_size_ - 0.5 * time_since_start * this->swing_step_size_ / this->subgait_duration_;
-      goal_position_x = model_com.X();
-      goal_position_y = model_com.Y();
   }
   else if (this->subgait_name_.substr(this->subgait_name_.size() - 5) == "close")
   {
     goal_position_x +=
         0.25 * this->swing_step_size_ - 0.25 * time_since_start * this->swing_step_size_ / this->subgait_duration_;
-      goal_position_x = model_com.X();
-      goal_position_y = model_com.Y();
   }
 }
 

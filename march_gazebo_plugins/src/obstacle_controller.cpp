@@ -91,15 +91,17 @@ void ObstacleController::update(ignition::math::v4::Vector3<double>& torque_left
     this->subgait_changed_ = false;
   }
 
-    if (this->subgait_name_.substr(this->subgait_name_.size() - 5) == "swing")
-    {
-        error_x = 0;
-        error_y = 0;
-        error_yaw = 0;
-        this->error_yaw_last_timestep_ = error_yaw;
-        this->error_x_last_timestep_ = error_x;
-        this->error_y_last_timestep_ = error_y;
-    }
+	if (this->subgait_name_ == "right_open_2" or
+	    this->subgait_name_ == "right_swing_1" or this->subgait_name_ == "right_swing_2" or
+	    this->subgait_name_ == "left_swing_1" or this->subgait_name_ == "left_swing_2")
+	{
+		error_x = 0;
+		error_y = 0;
+		error_yaw = 0;
+		this->error_yaw_last_timestep_ = error_yaw;
+		this->error_x_last_timestep_ = error_x;
+		this->error_y_last_timestep_ = error_y;
+	}
     else if (this->subgait_name_.substr(this->subgait_name_.size() - 5) == "close")
     {
 

@@ -18,6 +18,7 @@ ObstacleController::ObstacleController(physics::ModelPtr model)
 
   this->subgait_name_ = "home_stand";
   this->subgait_changed_ = true;
+  this->subgait_duration_ = 100000;
 
   this->mass = 0.0;
   for (auto const& link : this->model_->GetLinks())
@@ -66,7 +67,7 @@ void ObstacleController::update(ignition::math::v4::Vector3<double>& torque_left
   double time_since_start = this->model_->GetWorld()->SimTime().Double() - this->subgait_start_time_;
   if (time_since_start > 1.05 * this->subgait_duration_)
   {
-    this->subgait_name_ = "home_stand";
+    this->subgait_name_ = "idle_state";
     this->subgait_changed_ = true;
   }
 
@@ -90,18 +91,8 @@ void ObstacleController::update(ignition::math::v4::Vector3<double>& torque_left
     this->subgait_changed_ = false;
   }
 
-    if (this->subgait_name_.substr(this->subgait_name_.size() - 5) == "swing")
+    if (this->subgait_name_ != "home_stand")
     {
-        error_x = 0;
-        error_y = 0;
-        error_yaw = 0;
-        this->error_yaw_last_timestep_ = error_yaw;
-        this->error_x_last_timestep_ = error_x;
-        this->error_y_last_timestep_ = error_y;
-    }
-    else if (this->subgait_name_.substr(this->subgait_name_.size() - 5) == "close")
-    {
-
         error_x = 0;
         error_y = 0;
         error_yaw = 0;
@@ -142,7 +133,7 @@ void ObstacleController::getGoalPosition(double time_since_start, double& goal_p
   }
 
   // Goal position is determined from the location of the stable foot
-  goal_position_x = stable_foot_pose.X();
+  goal_position_x = stable_foot_pose.X() + 0.05;
   goal_position_y = stable_foot_pose.Y();
   auto model_com = this->GetCom();
 

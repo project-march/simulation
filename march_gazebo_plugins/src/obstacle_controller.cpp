@@ -18,6 +18,7 @@ ObstacleController::ObstacleController(physics::ModelPtr model)
 
   this->subgait_name_ = "home_stand";
   this->subgait_changed_ = true;
+  this->subgait_duration_ = 100000;
 
   this->mass = 0.0;
   for (auto const& link : this->model_->GetLinks())
@@ -36,13 +37,12 @@ void ObstacleController::newSubgait(const march_shared_resources::GaitActionGoal
                                                                            this->foot_left_->WorldPose().Pos().X());
   }
 
-  if (this->subgait_name_ == "home_stand" and _msg->goal.current_subgait.name.substr(0, 4) == "left")
+  if (this->subgait_name_ == "home_stand" and _msg->goal.subgait_name.substr(0, 4) == "left")
   {
     ROS_WARN("Gait starts with left. CoM controller plugin might not work properly.");
   }
-  this->subgait_name_ = _msg->goal.current_subgait.name;
-  this->subgait_duration_ =
-      _msg->goal.current_subgait.duration.sec + 0.000000001 * _msg->goal.current_subgait.duration.nsec;
+  this->subgait_name_ = _msg->goal.subgait_name;
+  this->subgait_duration_ = _msg->goal.duration.toSec();
   this->subgait_start_time_ = this->model_->GetWorld()->SimTime().Double();
   this->subgait_changed_ = true;
 }
@@ -67,7 +67,7 @@ void ObstacleController::update(ignition::math::v4::Vector3<double>& torque_left
   double time_since_start = this->model_->GetWorld()->SimTime().Double() - this->subgait_start_time_;
   if (time_since_start > 1.05 * this->subgait_duration_)
   {
-    this->subgait_name_ = "home_stand";
+    this->subgait_name_ = "idle_state";
     this->subgait_changed_ = true;
   }
 
@@ -91,20 +91,8 @@ void ObstacleController::update(ignition::math::v4::Vector3<double>& torque_left
     this->subgait_changed_ = false;
   }
 
-	if (this->subgait_name_ == "right_open_2" or
-	    this->subgait_name_ == "right_swing_1" or this->subgait_name_ == "right_swing_2" or
-	    this->subgait_name_ == "left_swing_1" or this->subgait_name_ == "left_swing_2")
-	{
-		error_x = 0;
-		error_y = 0;
-		error_yaw = 0;
-		this->error_yaw_last_timestep_ = error_yaw;
-		this->error_x_last_timestep_ = error_x;
-		this->error_y_last_timestep_ = error_y;
-	}
-    else if (this->subgait_name_.substr(this->subgait_name_.size() - 5) == "close")
+    if (this->subgait_name_ != "home_stand")
     {
-
         error_x = 0;
         error_y = 0;
         error_yaw = 0;
@@ -139,14 +127,16 @@ void ObstacleController::getGoalPosition(double time_since_start, double& goal_p
 {
   // Left foot is stable unless subgait name starts with left
   auto stable_foot_pose = this->foot_left_->WorldCoGPose().Pos();
+  auto swing_foot_pose = this->foot_right_->WorldCoGPose().Pos();
   if (this->subgait_name_.substr(0, 4) == "left")
   {
     stable_foot_pose = this->foot_right_->WorldCoGPose().Pos();
+    swing_foot_pose = this->foot_left_->WorldCoGPose().Pos();
   }
 
   // Goal position is determined from the location of the stable foot
-  goal_position_x = stable_foot_pose.X();
-  goal_position_y = stable_foot_pose.Y();
+  goal_position_x = stable_foot_pose.X() + 0.05;
+  goal_position_y = 0.5 * stable_foot_pose.Y() + 0.5 * swing_foot_pose.Y();
   auto model_com = this->GetCom();
 
   // Start goal position a quarter step size behind the stable foot

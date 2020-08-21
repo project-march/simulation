@@ -135,10 +135,9 @@ void ObstacleController::getGoalPosition(double time_since_start, double& goal_p
   }
 
   // Goal position is determined from the location of the stable foot
-  goal_position_x = stable_foot_pose.X() + 0.05;
-  goal_position_y = 0.5 * stable_foot_pose.Y() + 0.5 * swing_foot_pose.Y();
-  auto model_com = this->GetCom();
-
+  goal_position_x = stable_foot_pose.X();
+  goal_position_y = 0.75 * stable_foot_pose.Y() + 0.25 * swing_foot_pose.Y();
+	auto model_com = this->GetCom();
   // Start goal position a quarter step size behind the stable foot
   // Move the goal position forward with v = 0.5 * swing_step_size/subgait_duration
   if (this->subgait_name_.substr(this->subgait_name_.size() - 4) == "open")
